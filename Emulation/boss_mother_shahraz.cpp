@@ -17,19 +17,18 @@ enum
     SAY_ENRAGE         = -1564027,
     SAY_DEATH          = -1564028,
 
-    //Spells
-    SPELL_BEAM_SINISTER			 = 40859,
-    SPELL_BEAM_VILE				 = 40860,
-    SPELL_BEAM_WICKED			 = 40861,
-    SPELL_BEAM_SINFUL			 = 40827,
-    SPELL_ATTRACTION			 = 40871,
-    SPELL_SILENCING_SHRIEK		 = 40823,
-    SPELL_ENRAGE				 = 23537,
-    SPELL_TELEPORT_VISUAL		 = 41232, // Using 40869 would require hackfixes all over the place
-    SPELL_BERSERK				 = 45078,
+    // Spells & visuals
+    SPELL_BEAM_SINISTER          = 40859,
+    SPELL_BEAM_VILE              = 40860,
+    SPELL_BEAM_WICKED            = 40681,
+    SPELL_BEAM_SINFUL            = 40827,
+    SPELL_ATTRACTION             = 40871,
+    SPELL_SILENCING_SHRIEK       = 40823,
+    SPELL_ENRAGE                 = 23537,
+    SPELL_TELEPORT_VISUAL        = 41232,
     SPELL_FATAL_ATTRACTION_AURA  = 41001,
     SPELL_SABER_LASH_AURA        = 40816,
-    SPELL_SABER_LASH             = 43690,
+    SPELL_SABER_LASH             = 43690
 };
 
 struct AuraData
