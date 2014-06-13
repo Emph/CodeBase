@@ -68,6 +68,7 @@ struct MANGOS_DLL_DECL boss_akilzonAI : public ScriptedAI
 
         if (m_pInstance)
             m_pInstance->SetData(TYPE_AKILZON, IN_PROGRESS);
+            // Close gates, start Bear timed run timer
     }
 
     void KilledUnit(Unit* pVictim)
@@ -106,7 +107,9 @@ struct MANGOS_DLL_DECL boss_akilzonAI : public ScriptedAI
 
             if (Creature* pEagle = m_creature->SummonCreature(NPC_SOARING_EAGLE, fX, fY, m_creature->GetPositionZ() + frand(13.0f, 26.0f), m_creature->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1000))
             {
+                // Eagles use SPEED_RUN in database for visual reasons
                 pEagle->SetWalk(false);
+                // They also need to be able to hover properly, so they should levitate and use a spell with SPELL_EFFECT_HOVER
                 pEagle->SetLevitate(true);
                 pEagle->CastSpell(pEagle, 17131, true);
             }
@@ -210,6 +213,7 @@ enum
     POINT_ID_RANDOM         = 1
 };
 
+// Constants to control minimum/maximum height of the eagle
 const float minEagleZ = 84.f;
 const float maxEagleZ = 98.f;
 
@@ -219,6 +223,7 @@ struct MANGOS_DLL_DECL mob_soaring_eagleAI : public ScriptedAI
     {
         m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
         Reset();
+        // Fly clockwise or counter-clockwise
         CCW = urand(0,1);
     }
 
@@ -237,11 +242,13 @@ struct MANGOS_DLL_DECL mob_soaring_eagleAI : public ScriptedAI
     {
         m_uiEagleSwoopTimer = urand(5000,7000);
         m_uiReturnTimer = 800;
+        // Radius in yards of the arc. Kept at 20 for this example for simplicity's sake
         m_uiArcRadius = 20;
         m_uiPropagateArc = 0;
         m_uiMovementInterval = 200;
         m_bCanCast = true;
 
+        // Save the eagle's starting position so that we can successfully generate a circle
         m_creature->GetPosition(x, y, z);
     }
 
@@ -262,20 +269,25 @@ struct MANGOS_DLL_DECL mob_soaring_eagleAI : public ScriptedAI
     {
         float newX, newY, newZ;
 
+        // This calculation will provide the eagle with the next point on its circle automatically since the starting position was saved in the Reset() function
         newX = x + m_uiArcRadius*cos(m_uiPropagateArc*M_PI_F/12);
+        // y + for counter-clockwise, y - for clockwise
         newY = CCW ? y + m_uiArcRadius*sin(m_uiPropagateArc*M_PI_F/12) : y - m_uiArcRadius*sin(m_uiPropagateArc*M_PI_F/12);
 
         float curZ = m_creature->GetPositionZ();
 
         if (curZ < minEagleZ)
         {
+            // Propagate new height coordinates with a little bit of randomness to improve optical qualities
             newZ = minEagleZ + frand(0.1f, 2.2f);
         }
         else if (curZ > maxEagleZ)
         {
+            // Propagate new height coordinates with a little bit of randomness to improve optical qualities
             newZ = maxEagleZ - frand(1.0f, 3.3f);
         }
         else
+            // Propagate new height coordinates with a little bit of randomness to improve optical qualities
             newZ = urand(0,1) ? curZ + frand(1.2f, 2.25f) : curZ - frand(1.2f, 2.25f);
 
         m_creature->SetWalk(false);
@@ -298,10 +310,12 @@ struct MANGOS_DLL_DECL mob_soaring_eagleAI : public ScriptedAI
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
+        // Make sure the timer doesn't run if set to zero
         if (m_uiMovementInterval)
         {
             if (m_uiMovementInterval <= uiDiff)
             {
+                // Timing is handled in the movement inform function, hence we can set it to zero here
                 DoMoveEagleCircle();
                 m_uiMovementInterval = 0;
             }

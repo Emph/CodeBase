@@ -104,6 +104,7 @@ struct MANGOS_DLL_DECL boss_shahrazAI : public ScriptedAI
 
     void Reset()
     {
+        // Clear stored data in our damage tracker for each spell school
         ResetAuraData();
 
         for (int i = 0; i < 3; ++i)
@@ -133,6 +134,7 @@ struct MANGOS_DLL_DECL boss_shahrazAI : public ScriptedAI
             m_pInstance->SetData(TYPE_SHAHRAZ, IN_PROGRESS);
 
         if (!m_creature->HasAura(SPELL_SABER_LASH_AURA))
+            // This aura will trigger saber lash casts automatically, after being implemented properly in the database and core.
             DoCastSpellIfCan(m_creature, SPELL_SABER_LASH_AURA, CAST_TRIGGERED);
 
         DoScriptText(SAY_AGGRO, m_creature);
@@ -189,7 +191,7 @@ struct MANGOS_DLL_DECL boss_shahrazAI : public ScriptedAI
         auraMap.clear();
 
         // Meh, we could just do this the first time and clear after
-        // Extra code is nonsense though, and this won't do any harm to make sure it's fersh
+        // Extra code is nonsense though, and this won't do any harm to make sure the map is fresh
         for (int i = 0; i < MAX_SPELL_SCHOOL; ++i)
         {
             AuraData* aur = new AuraData();
@@ -201,12 +203,16 @@ struct MANGOS_DLL_DECL boss_shahrazAI : public ScriptedAI
 
     void AdjustAuraData(uint32 school, uint32 damage)
     {
+        // Identify spell school (this is passed from the DamageTaken function)
         std::map<uint32, AuraData*>::const_iterator itr = auraMap.find(school);
         if( itr != auraMap.cend() )
         {
+            // Add tracked damage of school to the map
             itr->second->mSchoolDamage += damage;
+            // Damage should be reduced 10% per 4000 school damage taken.
             itr->second->mCastAmount = (itr->second->mSchoolDamage / 4000);
 
+            // Maximum reduction is 90%. 
             if (itr->second->mCastAmount > 9)
                 itr->second->mCastAmount = 9;
         }
@@ -218,11 +224,13 @@ struct MANGOS_DLL_DECL boss_shahrazAI : public ScriptedAI
     {
         for (std::map<uint32, AuraData*>::const_iterator itr = auraMap.begin(); itr != auraMap.end(); ++itr)
         {
+            // If no damage has been taken, we shouldn't reduce damage from this school
             if (itr->second->mCastAmount == 0)
                 continue;
 
-            int castAmount = itr->second->mCastAmount;
-            for (int i = 0; i < castAmount; ++i)
+            uint8 castAmount = itr->second->mCastAmount;
+            // One cast is -10%, stacks up to 9 times on players.
+            for (uint8 i = 0; i < castAmount; ++i)
                 DoCast(m_creature, itr->second->mAuraId, true);
         }
     }
@@ -240,7 +248,8 @@ struct MANGOS_DLL_DECL boss_shahrazAI : public ScriptedAI
         DoScriptText(SAY_DEATH, m_creature);
     }
 
-    // This should easily be doable using the normal spell_target_position table with coordinates instead of this hackfix
+    // Target coordinates were implemented in spell_target_position table, hence they're not really required here
+    // We keep them for simplicity of reading the code
     void TeleportPlayers()
     {
         std::vector<Unit*> vTargets;
@@ -279,6 +288,7 @@ struct MANGOS_DLL_DECL boss_shahrazAI : public ScriptedAI
     {
         if (uiDamage && pSpell)
         {
+            // Pass school and damage to the aura tracker
             uint32 school = GetFirstSchoolInMask( SpellSchoolMask(pSpell->schoolMask) );
             AdjustAuraData(school, uiDamage);
 
