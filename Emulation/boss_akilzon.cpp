@@ -227,7 +227,7 @@ struct MANGOS_DLL_DECL mob_soaring_eagleAI : public ScriptedAI
     uint32 m_uiEagleSwoopTimer;
     uint32 m_uiReturnTimer;
     uint32 m_uiArcRadius;
-    uint32 m_uiArcTimer;
+    uint32 m_uiPropagateArc;
     uint32 m_uiMovementInterval;
     float x, y, z;
     bool m_bCanCast;
@@ -238,7 +238,7 @@ struct MANGOS_DLL_DECL mob_soaring_eagleAI : public ScriptedAI
         m_uiEagleSwoopTimer = urand(5000,7000);
         m_uiReturnTimer = 800;
         m_uiArcRadius = 20;
-        m_uiArcTimer = 0;
+        m_uiPropagateArc = 0;
         m_uiMovementInterval = 200;
         m_bCanCast = true;
 
@@ -262,8 +262,8 @@ struct MANGOS_DLL_DECL mob_soaring_eagleAI : public ScriptedAI
     {
         float newX, newY, newZ;
 
-        newX = x + m_uiArcRadius*cos(m_uiArcTimer*M_PI_F/12);
-        newY = CCW ? y + m_uiArcRadius*sin(m_uiArcTimer*M_PI_F/12) : y - m_uiArcRadius*sin(m_uiArcTimer*M_PI_F/12);
+        newX = x + m_uiArcRadius*cos(m_uiPropagateArc*M_PI_F/12);
+        newY = CCW ? y + m_uiArcRadius*sin(m_uiPropagateArc*M_PI_F/12) : y - m_uiArcRadius*sin(m_uiPropagateArc*M_PI_F/12);
 
         float curZ = m_creature->GetPositionZ();
 
@@ -289,7 +289,7 @@ struct MANGOS_DLL_DECL mob_soaring_eagleAI : public ScriptedAI
             return;
 
         m_bCanCast = true;
-        ++m_uiArcTimer;
+        ++m_uiPropagateArc;
         m_uiMovementInterval = 100;
     }
 
